@@ -20,29 +20,40 @@ public class Trie {
         }
     }
     public Node iterateForward(String s){
-    	boolean check = false;
+    	
+    	ArrayList<String> taulukko = new ArrayList<String>();
         Node tmp = this.alkuNode;
         if (s.length() <= 2)
         	return null;
-
         for (int j = 0; j < s.length() -2; j++) {
-            String tmps = s.substring(0, 3);
+            String tmps = s.substring(j, j+3);
         	if (tmp.seuraavat.isEmpty()) {
         		return null;
         	}
         	for (int i = 0; i < tmp.seuraavat.size(); i++) {
         		if (tmp.seuraavat.get(i).element.equalsIgnoreCase(tmps)) {
-        			check = true;
         			tmp = tmp.seuraavat.get(i);
+        			taulukko.add(tmp.element);
         			break;
         		}
+        		
         	}
 
         }
-        if (check)
-        	return tmp;
-        else
+        boolean check = true;
+        if (taulukko.isEmpty())
         	return null;
+    	for (int i2 = 0; i2 < s.length()-2; i2++) {
+    		String s2 = s.substring(i2, i2+3);
+    		String s3 = taulukko.get(i2);
+    		if (!s2.equals(s3)) {
+    			check = false;
+    		}
+    	}
+    	if (check)
+    		return tmp;
+    	else
+    		return null;
     }
     public boolean addNode(String s) {
 
@@ -73,10 +84,14 @@ public class Trie {
     			Node tmp2 = this.iterateForward(tmps);
     			if (tmp2 == null) {
     				String addString = tmps.substring(tmps.length()-3);
-    				tmp.seuraavat.add(new Node(addString));
+    				if (tmps.length() >= 4)
+    					this.iterateForward(tmps.substring(0, tmps.length()-1)).seuraavat.add(new Node(addString));
+    				else
+    					this.alkuNode.seuraavat.add(new Node(addString));
+    				//System.out.println(addString);
     				this.iterateForward(tmps).count++;
 
-    				tmp = this.iterateForward(s.substring(0, i+3));
+    				tmp = this.iterateForward(tmps);
 
     				continue;
     			} else {
