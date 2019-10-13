@@ -60,7 +60,9 @@ public class Trie {
     		
     	}
     	if (this.iterateForward(s) != null) {
-    		this.iterateForward(s).count++;
+    		for (int i = 0; i < s.length() - 2; i++) {
+    			this.iterateForward(s.substring(0, i+3)).count++;
+    		}
     		return true;
     	} else {
     		Node tmp = this.alkuNode;
