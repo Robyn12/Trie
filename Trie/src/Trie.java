@@ -1,13 +1,15 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
 
 
 
 public class Trie {
 	
 	Node alkuNode = new Node(null);
-	
+	int maxChars;
     private class Node {
         String element;
         int count;
@@ -43,6 +45,8 @@ public class Trie {
         boolean check = true;
         if (taulukko.isEmpty())
         	return null;
+        if (s.length()-2 != taulukko.size())
+        	return null;
     	for (int i2 = 0; i2 < s.length()-2; i2++) {
     		String s2 = s.substring(i2, i2+3);
     		String s3 = taulukko.get(i2);
@@ -54,6 +58,13 @@ public class Trie {
     		return tmp;
     	else
     		return null;
+    }
+    public static <T> boolean hasDuplicate(Iterable<T> all) {
+        Set<T> set = new HashSet<T>();
+        // Set#add returns false if the set does not change, which
+        // indicates that a duplicate element has been added.
+        for (T each: all) if (!set.add(each)) return true;
+        return false;
     }
     public boolean addNode(String s) {
 
@@ -128,7 +139,105 @@ public class Trie {
     	}
     	return -1;
     }
-    public Trie(ArrayList<String> sanasto) {
+    public int LaskeListanKoko(String hakusana) {
+    	Node tmp = this.iterateForward(hakusana);
+    	int j = 0;
+    	if (tmp.seuraavat.isEmpty())
+    		return 0;
+    	for (int i = 0; i < tmp.seuraavat.size(); i++)
+    		j += tmp.seuraavat.get(i).count;
+    	return j;
+    }
+    public String haeSana(String hakusana) {
+    	if (this.iterateForward(hakusana) == null)
+    		return null;
+    	Node tmp = this.iterateForward(hakusana);
+    	String tmpS = hakusana;
+    	int i = tmp.count;
+    	
+    	do {
+    		if (tmp.seuraavat.isEmpty())
+    			break;
+    		tmp = tmp.seuraavat.get(0);
+    		i = tmp.count;
+    		tmpS += tmp.element.substring(2);
+    	}while (i != 1);
+    	return tmpS;
+    }
+    public ArrayList<String> haeLista(String hakusana) {
+    	int koko = LaskeListanKoko(hakusana);
+    	int syvyys = this.maxChars;
+    	if (this.iterateForward(hakusana) == null)
+    		return null;
+    	Node tmp = this.iterateForward(hakusana);
+    	ArrayList<String> Lista = new ArrayList<>(tmp.count);
+    	if (koko < tmp.count) {
+    		Lista.add(hakusana);
+    	}
+    	
+    	for (int i = 0; i < koko; i++) {
+    		Lista.add(hakusana);
+    	}
+    	int tmpSSize = hakusana.length();
+    	while(syvyys != 0) {
+    		int i = 0;
+			//ArrayList<Boolean> checkit= new ArrayList<Boolean>(koko);
+    		while (i < koko) {
+
+    			String tmpString = Lista.get(i);
+    			
+    			tmp = this.iterateForward(tmpString);
+    			int counter= 0;
+    			for (String subi : Lista) {
+    				int pituus = subi.length() < tmpString.length() ? subi.length() : tmpString.length(); 
+    				if (tmpString.equalsIgnoreCase(subi.substring(0, pituus)) && !this.hasDuplicate(Lista))
+    					counter++;
+    			}
+
+    			if (tmp.count == 1) {
+    				Lista.set(i, this.haeSana(tmpString));
+    				
+    				i++;
+    				continue;
+    			} else if (tmp.count == counter) {
+    				Lista.set(i, tmpString);
+    				i++;
+    				continue;
+    			}
+    			ArrayList<Node> tmpLista = tmp.seuraavat;
+    			if (tmpLista.isEmpty()) {
+    				i++;
+    				continue;
+    			}
+    			for (int i2 = 0; i2 < tmp.seuraavat.size(); i2++) {
+    				for (int i3 = 0; i3 < tmp.seuraavat.get(i2).count; i3++) { 
+    					String tmpString2 = tmpString + tmp.seuraavat.get(i2).element.substring(2);
+    					if (tmpString2.length() == tmpSSize+1) {
+    						Lista.set(i, tmpString2);
+    						i++;
+    					}
+    				}
+    				int lisays = tmp.count - this.LaskeListanKoko(tmpString);
+    				i += lisays;
+    			}
+    		}
+    		syvyys--;
+    		tmpSSize++;
+    	}
+    	
+    	Collections.sort(Lista);
+    	return Lista;
+    	
+    	
+    }
+    public Trie(ArrayList<String> sanasto, int maxChars) {
+    	this.maxChars = maxChars -3;
+    	for (String sana : sanasto)  {
+    		this.addNode(sana);
+    	}
+    	
+    }    public Trie(ArrayList<String> sanasto) {
+    	this.maxChars = 4;
     	for (String sana : sanasto)  {
     		this.addNode(sana);
     	}
